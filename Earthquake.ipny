@@ -1,0 +1,287 @@
+{
+ "metadata": {
+  "name": "",
+  "signature": "sha256:f8cb285f6117615df19c6802149e61510c744e532569542e45b6aaa97a005a93"
+ },
+ "nbformat": 3,
+ "nbformat_minor": 0,
+ "worksheets": [
+  {
+   "cells": [
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "#Importing all the required libraries\n",
+      "\n",
+      "import pandas as pd\n",
+      "import numpy as np\n",
+      "import urllib\n",
+      "import json\n",
+      "import time\n",
+      "import math\n",
+      "import os"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 5
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "1.Read jsonfile from the url and load into object. <br />\n",
+      "2.Create a File and empty its contents before appending.<br />\n",
+      "3.Create a header for the CSV File. <br />\n",
+      "4.Import the appropriate fields from JSON to CSV format. <br />\n",
+      "5.Clean the data: Coordinates have the format \"[x,y,z]\".Remove the delimiters'[]' <br />\n",
+      "6.Change the 13 digit time format to readable format. <br />"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "#Reading a json file and converting it to csv file.\n",
+      "\n",
+      "earthquake_url= 'http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'\n",
+      "j_data = json.loads(urllib.urlopen(earthquake_url).read())\n",
+      "\n",
+      "outfile   = open('earth.csv', 'w')\n",
+      "print >> outfile,'ID,COORDINATE_1,COORDINATE_2,COORDINATE_3,PROP_TYPE,MAG,TIME'\n",
+      "\n",
+      "for f in j_data['features']:\n",
+      "    e_id = str(f['id'])\n",
+      "    coordinates = str(f['geometry']['coordinates'])\n",
+      "    proptype = str(f['properties']['type']) # filter only earthquake\n",
+      "    magnitude = str(f['properties']['mag'])\n",
+      "    e_time = f['properties']['time']\n",
+      "    csv_list = [e_id,coordinates.translate(None,'[]'), proptype,magnitude,str(time.strftime(\"%a %d %b %Y\", time.gmtime(e_time/ 1000.0)))]\n",
+      "    csv_file = \",\".join(csv_list)\n",
+      "    print >> outfile,csv_file \n"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 6
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "#Reading csv into data frame \n",
+      "loadData = pd.read_csv('earth.csv')\n",
+      "\n",
+      "# Data cleaning: Replace all null values,zeros with NaN\n",
+      "loadData = loadData.replace('none',np.nan) \n",
+      "\n",
+      "#Get the top 5 tuples from the dataframe\n",
+      "loadData.head()"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [
+      {
+       "html": [
+        "<div style=\"max-height:1000px;max-width:1500px;overflow:auto;\">\n",
+        "<table border=\"1\" class=\"dataframe\">\n",
+        "  <thead>\n",
+        "    <tr style=\"text-align: right;\">\n",
+        "      <th></th>\n",
+        "      <th>ID</th>\n",
+        "      <th>COORDINATE_1</th>\n",
+        "      <th>COORDINATE_2</th>\n",
+        "      <th>COORDINATE_3</th>\n",
+        "      <th>PROP_TYPE</th>\n",
+        "      <th>MAG</th>\n",
+        "      <th>TIME</th>\n",
+        "    </tr>\n",
+        "  </thead>\n",
+        "  <tbody>\n",
+        "    <tr>\n",
+        "      <th>0</th>\n",
+        "      <td> nc72380456</td>\n",
+        "      <td>-122.814331</td>\n",
+        "      <td> 38.805332</td>\n",
+        "      <td> 1.55</td>\n",
+        "      <td> earthquake</td>\n",
+        "      <td> 0.84</td>\n",
+        "      <td> Tue 13 Jan 2015</td>\n",
+        "    </tr>\n",
+        "    <tr>\n",
+        "      <th>1</th>\n",
+        "      <td> usc000tf5f</td>\n",
+        "      <td> -97.700000</td>\n",
+        "      <td> 36.803900</td>\n",
+        "      <td> 4.59</td>\n",
+        "      <td> earthquake</td>\n",
+        "      <td> 3.60</td>\n",
+        "      <td> Tue 13 Jan 2015</td>\n",
+        "    </tr>\n",
+        "    <tr>\n",
+        "      <th>2</th>\n",
+        "      <td> nc72380441</td>\n",
+        "      <td>-120.788170</td>\n",
+        "      <td> 35.563168</td>\n",
+        "      <td> 0.15</td>\n",
+        "      <td> earthquake</td>\n",
+        "      <td> 1.19</td>\n",
+        "      <td> Tue 13 Jan 2015</td>\n",
+        "    </tr>\n",
+        "    <tr>\n",
+        "      <th>3</th>\n",
+        "      <td> nc72380431</td>\n",
+        "      <td>-121.246330</td>\n",
+        "      <td> 36.636833</td>\n",
+        "      <td> 7.94</td>\n",
+        "      <td> earthquake</td>\n",
+        "      <td> 1.62</td>\n",
+        "      <td> Tue 13 Jan 2015</td>\n",
+        "    </tr>\n",
+        "    <tr>\n",
+        "      <th>4</th>\n",
+        "      <td> nc72380426</td>\n",
+        "      <td>-121.113502</td>\n",
+        "      <td> 36.529835</td>\n",
+        "      <td> 3.19</td>\n",
+        "      <td> earthquake</td>\n",
+        "      <td> 2.03</td>\n",
+        "      <td> Tue 13 Jan 2015</td>\n",
+        "    </tr>\n",
+        "  </tbody>\n",
+        "</table>\n",
+        "</div>"
+       ],
+       "metadata": {},
+       "output_type": "pyout",
+       "prompt_number": 7,
+       "text": [
+        "           ID  COORDINATE_1  COORDINATE_2  COORDINATE_3   PROP_TYPE   MAG  \\\n",
+        "0  nc72380456   -122.814331     38.805332          1.55  earthquake  0.84   \n",
+        "1  usc000tf5f    -97.700000     36.803900          4.59  earthquake  3.60   \n",
+        "2  nc72380441   -120.788170     35.563168          0.15  earthquake  1.19   \n",
+        "3  nc72380431   -121.246330     36.636833          7.94  earthquake  1.62   \n",
+        "4  nc72380426   -121.113502     36.529835          3.19  earthquake  2.03   \n",
+        "\n",
+        "              TIME  \n",
+        "0  Tue 13 Jan 2015  \n",
+        "1  Tue 13 Jan 2015  \n",
+        "2  Tue 13 Jan 2015  \n",
+        "3  Tue 13 Jan 2015  \n",
+        "4  Tue 13 Jan 2015  "
+       ]
+      }
+     ],
+     "prompt_number": 7
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "# Calculating the distance function to compute the distance from Earthquake zones to Interana office\n",
+      "\n",
+      "# Coordinates of Interana Office\n",
+      "lat1, lon1 = 37.45227, -122.16669 \n",
+      "\n",
+      "# Read the coordinates from the data frame\n",
+      "lon2 = loadData.COORDINATE_1\n",
+      "lat2 = loadData.COORDINATE_2\n",
+      "\n",
+      "# Creating a Distance function to compute distance between coordinates\n",
+      "def distance(lat1, lon1, lat2, lon2):\n",
+      "        lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])\n",
+      "        dlon = lon2 - lon1\n",
+      "        dlat = lat2 - lat1\n",
+      "        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2\n",
+      "        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))\n",
+      "        miles = 6367 * c * 0.62\n",
+      "        return miles\n",
+      "\n",
+      "# Create an Empty Dictionary\n",
+      "DISTANCE ={}    \n",
+      "\n",
+      "# Compute the distance for each row in the data frame\n",
+      "for i in xrange(len(lat2)):\n",
+      "    DISTANCE[i] = [lat2[i], distance(lat1, lon1, lat2[i], lon2[i])]\n",
+      "    #print DISTANCE[i]\n",
+      "\n",
+      "# Create a new data frame with Coordinate2 an Calculated Distance    \n",
+      "pd.DataFrame(DISTANCE)\n",
+      "t = pd.DataFrame(DISTANCE)\n",
+      "t = t.T\n",
+      "t.columns = ['COORDINATE_2','DISTANCE']\n",
+      "\n",
+      "#Merging two data frames on the common column 'Coordinate2'.\n",
+      "x = pd.merge(t,loadData, on='COORDINATE_2') \n",
+      "x.head()\n"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [
+      {
+       "ename": "SyntaxError",
+       "evalue": "invalid syntax (<ipython-input-4-8c6e00f97132>, line 7)",
+       "output_type": "pyerr",
+       "traceback": [
+        "\u001b[0;36m  File \u001b[0;32m\"<ipython-input-4-8c6e00f97132>\"\u001b[0;36m, line \u001b[0;32m7\u001b[0m\n\u001b[0;31m    lon2 = loadData.COORDINATE 1\u001b[0m\n\u001b[0m                               ^\u001b[0m\n\u001b[0;31mSyntaxError\u001b[0m\u001b[0;31m:\u001b[0m invalid syntax\n"
+       ]
+      }
+     ],
+     "prompt_number": 4
+    },
+    {
+     "cell_type": "markdown",
+     "metadata": {},
+     "source": [
+      "####QUESTION: Find the highest magnitude earthquake within the last 7 days within 100 miles of our office.\n",
+      "Find Today's date and then check for the conditions:\n",
+      "1. Check if the Distance is below 100 miles\n",
+      "2. Date is within last 7 days.\n",
+      "3. Property type is earthquake\n",
+      "4. Find Max of magnitude from the tuples that satisfy the above conditions.\n"
+     ]
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "from datetime import date, timedelta\n",
+      "d = date.today() - timedelta(7) # substracting 7days from today's date\n",
+      "f = d.strftime(\"%a %d %b %Y\")\n",
+      "print f # printing 7 day's earlier date\n",
+      "\n",
+      "Final_ans = x[(x['DISTANCE']< 100) & (x['TIME'] > f) & (x['PROP_TYPE'] == 'earthquake')]  \n",
+      "print 'ANSWER: ',max(Final_ans['MAG'])"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [
+      {
+       "output_type": "stream",
+       "stream": "stdout",
+       "text": [
+        "Tue 06 Jan 2015\n",
+        "ANSWER:  2.92\n"
+       ]
+      }
+     ],
+     "prompt_number": 152
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "os.remove('earth.csv')\n",
+      "#Finally delete the csv file after execution\n"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 8
+    }
+   ],
+   "metadata": {}
+  }
+ ]
+}
